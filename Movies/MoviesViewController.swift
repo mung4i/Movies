@@ -28,11 +28,11 @@ class MoviesViewController: UIViewController {
     
     func fetchMovies(keyword: String) {
         let queue = DispatchQueue.global(qos: .userInitiated)
-        service.sendRequest(search: ["s": keyword, "year": "2014"], queue: queue) { [weak self] (result) in
+        service.sendRequest(search: ["s": keyword], queue: queue) { [weak self] (result) in
             switch result {
             case .success(let response):
                 self?.movies = response as? MovieResponse
-                self?.fetchImages(queue: queue)
+                self?.fetchImages(queue: queue, titles: (self?.movies)!)
                 self?.refreshTableView()
             case .failure(let error):
                 print(error)
@@ -40,20 +40,32 @@ class MoviesViewController: UIViewController {
         }
     }
     
-    func fetchImages(queue: DispatchQueue) {
-        self.movies?.movies.forEach {
+    func fetchImages(queue: DispatchQueue, titles: MovieResponse) {
+        
+        var count = 0
+        titles.movies.forEach {
             let url = URL(string: $0.poster)
             service.getImage(from: url!, queue: queue) { [weak self] (result) in
                 switch result {
                 case .success(let data):
                     let image = UIImage(data: data as! Data)
-                    self?.images?.append(image!)
+                    self?.setImage(row: count, image: image!)
+                    count += 1
                 case .failure(_):
                     break
                 }
             }
         }
-        self.refreshTableView()
+    }
+    
+    func setImage(row: Int, image: UIImage) {
+        
+        DispatchQueue.main.async {
+            let indexPath = IndexPath(row: row, section: 0)
+            let cell = self.tableView.cellForRow(at: indexPath) as? MovieTableViewCell
+            cell?.setImage(image: image)
+//            self.tableView.reloadRows(at: [indexPath], with: .fade)
+        }
     }
     
     let service = MoviesService()
@@ -77,8 +89,7 @@ extension MoviesViewController: UITableViewDataSource {
     
         let cell = tableView.dequeueReusableCell(withIdentifier: "movieCell", for: indexPath) as? MovieTableViewCell
 
-        guard let poster = UIImage(named: "poster-placeholder") else { return UITableViewCell() }
-        cell?.logo.image = poster
+        cell?.logo.image = images?[indexPath.row]
         cell?.label.text = movies[indexPath.row].title
         
         return cell!

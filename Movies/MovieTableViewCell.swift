@@ -13,5 +13,8 @@ class MovieTableViewCell: UITableViewCell {
     @IBOutlet weak var logo: UIImageView!
     @IBOutlet weak var label: UILabel!
     
+    func setImage(image: UIImage) {
+        self.logo.image = image
+    }
 
 }
