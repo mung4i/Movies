@@ -50,6 +50,7 @@ class MoviesViewController: UIViewController {
                 case .success(let data):
                     let image = UIImage(data: data as! Data)
                     self?.setImage(row: count, image: image!)
+                    self?.images.append(image!)
                     count += 1
                 case .failure(_):
                     break
@@ -64,13 +65,12 @@ class MoviesViewController: UIViewController {
             let indexPath = IndexPath(row: row, section: 0)
             let cell = self.tableView.cellForRow(at: indexPath) as? MovieTableViewCell
             cell?.setImage(image: image)
-//            self.tableView.reloadRows(at: [indexPath], with: .fade)
         }
     }
     
     let service = MoviesService()
     private var movies: MovieResponse?
-    private var images: [UIImage]?
+    private var images = [UIImage]()
     
     
     @IBOutlet weak var search: UITextField!
@@ -88,10 +88,18 @@ extension MoviesViewController: UITableViewDataSource {
         guard let movies = self.movies?.movies else { return UITableViewCell() }
     
         let cell = tableView.dequeueReusableCell(withIdentifier: "movieCell", for: indexPath) as? MovieTableViewCell
-
-        cell?.logo.image = images?[indexPath.row]
-        cell?.label.text = movies[indexPath.row].title
         
+        guard let defaultImage = UIImage(named: "poster-placeholder") else { return UITableViewCell() }
+        
+        cell?.label.text = movies[indexPath.row].title
+        if images.count != movies.count {
+            
+            cell?.logo.image = defaultImage
+            return cell!
+        }
+        
+        cell?.logo.image = images[indexPath.row]
+
         return cell!
     }
 }
