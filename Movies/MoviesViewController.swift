@@ -31,6 +31,7 @@ class MoviesViewController: UIViewController {
     func fetchMovies(keyword: String, page: Int) {
         let queue = DispatchQueue.global(qos: .userInitiated)
         service.sendRequest(search: ["s": keyword, "page": "\(page)"], queue: queue) { [weak self] (result) in
+            DispatchQueue.main.async { self?.createSpinnerView() }
             switch result {
             case .success(let response):
                 self?.movies = response as? MovieResponse
@@ -65,6 +66,24 @@ class MoviesViewController: UIViewController {
         button.layer.cornerRadius = 5
     }
     
+    func createSpinnerView() {
+        let child = SpinnerViewController()
+        
+        // add the spinner view controller
+        addChild(child)
+        child.view.frame = view.frame
+        view.addSubview(child.view)
+        child.didMove(toParent: self)
+        
+        // wait two seconds to simulate some work happening
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+            // then remove the spinner view controller
+            child.willMove(toParent: nil)
+            child.view.removeFromSuperview()
+            child.removeFromParent()
+        }
+    }
+    
     func setImage(row: Int, image: UIImage) {
         
         DispatchQueue.main.async {
@@ -75,6 +94,7 @@ class MoviesViewController: UIViewController {
     }
     
     let service = MoviesService()
+    private let activityIndicator = UIActivity.init()
     private var movies: MovieResponse?
     private var images = [UIImage]()
     private var page = 1
@@ -102,7 +122,7 @@ extension MoviesViewController: UITableViewDataSource {
     }
 
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        
+        createSpinnerView()
         guard let movies = self.movies?.movies else { return UITableViewCell() }
     
         let cell = tableView.dequeueReusableCell(withIdentifier: "movieCell", for: indexPath) as? MovieTableViewCell
@@ -110,8 +130,8 @@ extension MoviesViewController: UITableViewDataSource {
         guard let defaultImage = UIImage(named: "poster-placeholder") else { return UITableViewCell() }
         
         cell?.label.text = movies[indexPath.row].title
+        
         if images.count != movies.count {
-            
             cell?.logo.image = defaultImage
             return cell!
         }
@@ -147,8 +167,24 @@ extension MoviesViewController: UITextFieldDelegate {
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
         self.view.endEditing(true)
         self.clearTableView()
-        self.fetchMovies(keyword: textField.text!, page: page)
+        self.fetchMovies(keyword: textField.text!, page: 1)
         return true
+    }
+}
+
+class SpinnerViewController: UIViewController {
+    var spinner = UIActivityIndicatorView(style: .whiteLarge)
+    
+    override func loadView() {
+        view = UIView()
+        view.backgroundColor = UIColor(white: 0, alpha: 0.1)
+        
+        spinner.translatesAutoresizingMaskIntoConstraints = false
+        spinner.startAnimating()
+        view.addSubview(spinner)
+        
+        spinner.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
+        spinner.centerYAnchor.constraint(equalTo: view.centerYAnchor).isActive = true
     }
 }
 
