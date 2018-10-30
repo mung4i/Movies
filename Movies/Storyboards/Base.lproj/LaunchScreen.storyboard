@@ -38,6 +38,6 @@
         </scene>
     </scenes>
     <resources>
-        <image name="Group" width="180" height="180"/>
+        <image name="Group" width="60" height="60"/>
     </resources>
 </document>

@@ -82,7 +82,7 @@
                                             <rect key="frame" x="0.0" y="0.0" width="375" height="66"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
-                                                <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="lnx-Wk-JrB">
+                                                <imageView userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="lnx-Wk-JrB">
                                                     <rect key="frame" x="0.0" y="0.0" width="66" height="66"/>
                                                     <constraints>
                                                         <constraint firstAttribute="width" secondItem="lnx-Wk-JrB" secondAttribute="height" multiplier="1:1" id="g5D-Xj-qf5"/>

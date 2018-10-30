@@ -25,6 +25,7 @@ class MoviesViewController: UIViewController {
     }
     
     func clearTableView() {
+        self.images = []
         DispatchQueue.main.async { self.tableView.reloadData() }
     }
     
