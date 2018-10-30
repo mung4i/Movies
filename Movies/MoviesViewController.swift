@@ -13,6 +13,8 @@ class MoviesViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        self.addProps(button: _next)
+        self.addProps(button: _previous)
         self.tableView.delegate = self
         self.tableView.dataSource = self
         self.search.delegate = self
@@ -26,9 +28,9 @@ class MoviesViewController: UIViewController {
         DispatchQueue.main.async { self.tableView.reloadData() }
     }
     
-    func fetchMovies(keyword: String) {
+    func fetchMovies(keyword: String, page: Int) {
         let queue = DispatchQueue.global(qos: .userInitiated)
-        service.sendRequest(search: ["s": keyword], queue: queue) { [weak self] (result) in
+        service.sendRequest(search: ["s": keyword, "page": "\(page)"], queue: queue) { [weak self] (result) in
             switch result {
             case .success(let response):
                 self?.movies = response as? MovieResponse
@@ -59,6 +61,10 @@ class MoviesViewController: UIViewController {
         }
     }
     
+    private func addProps(button: UIButton) {
+        button.layer.cornerRadius = 5
+    }
+    
     func setImage(row: Int, image: UIImage) {
         
         DispatchQueue.main.async {
@@ -71,8 +77,20 @@ class MoviesViewController: UIViewController {
     let service = MoviesService()
     private var movies: MovieResponse?
     private var images = [UIImage]()
+    private var page = 1
     
+    @IBAction func nextTapped(_ sender: UIButton) {
+        page += 1
+        fetchMovies(keyword: self.search.text!, page: page)
+    }
     
+    @IBAction func previousTapped(_ sender: UIButton) {
+        page -= 1
+        fetchMovies(keyword: self.search.text!, page: page)
+    }
+    
+    @IBOutlet weak var _next: UIButton!
+    @IBOutlet weak var _previous: UIButton!
     @IBOutlet weak var search: UITextField!
     @IBOutlet weak var tableView: UITableView!
 }
@@ -129,7 +147,7 @@ extension MoviesViewController: UITextFieldDelegate {
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
         self.view.endEditing(true)
         self.clearTableView()
-        self.fetchMovies(keyword: textField.text!)
+        self.fetchMovies(keyword: textField.text!, page: page)
         return true
     }
 }
